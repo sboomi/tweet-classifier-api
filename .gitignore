@@ -154,4 +154,7 @@ Thumbs.db
 data/*
 !data/.gitkeep
 
+config/*
+!config/.gitkeep
+
 # End of https://www.toptal.com/developers/gitignore/api/python
