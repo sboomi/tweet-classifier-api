@@ -3,20 +3,34 @@ version: '3.7'
 services:
   db:
     image: mysql:8.0.24
+    command: --default-authentication-plugin=mysql_native_password
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      # Password for 'root' access
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      DB_HOST: ${DB_HOST}
+    container_name: mysql-db
     ports:
-      - 0.0.0.0:${MYSQL_PORT}:${MYSQL_PORT}
-    expose:
-      - ${MYSQL_PORT}
+      - 0.0.0.0:${MYSQL_PORT}:${MYSQL_PORT} #0.0.0.0
+    # expose:
+    #   - ${MYSQL_PORT}
     volumes:
-      - ./data:/app/data
+      - ./data/mysql:/app/data
     networks:
-      - app-net
+      - app-net-back
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    container_name: php-myadmin
+    networks:
+      - app-net-back
+
   flask-api:
     build:
       context: .
@@ -29,6 +43,10 @@ services:
         - MYSQL_PASSWORD=${MYSQL_PASSWORD}
         - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
         - MYSQL_PORT=${MYSQL_PORT}
+        - DB_HOST=${DB_HOST}
+        - REACT_PORT=${REACT_PORT}
+    depends_on:
+      - db
     restart: unless-stopped
     links:
       - db
@@ -41,7 +59,29 @@ services:
     volumes:
       - ./src:/app/src
     networks:
-      - app-net
+      - app-net-back
+      - app-net-front
+
+  web:
+    container_name: react-front
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: ${DOCKERFILE_WEB}
+      args:
+        - FLASK_ENV=${FLASK_ENV}
+        - FLASK_HOST=0.0.0.0
+        - REACT_SCRIPTS_VERSION=${REACT_SCRIPTS_VERSION}
+    volumes:
+      - ./web:/app
+      - /app/node_modules
+    ports:
+      - ${REACT_PORT}:${REACT_PORT}
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    networks:
+      - app-net-front
 
 networks:
-  app-net:
+  app-net-back:
+  app-net-front:

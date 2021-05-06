@@ -51,17 +51,28 @@ class TweetSchema(CamelCaseSchema):
     ])
     tweet_date = fields.DateTime(description="Timestamp of the tweet",
                                  required=True,
-                                 format="%a %b %d %H:%M:%S %z %Y")
-    twitter_id = fields.Integer(description="Id of the tweet", required=True)
-    handle = fields.String(description="Twitter handle of the user", required=True)
-    text = fields.String(description="Contents of the tweet (< 280 characters)")
+                                 format="%a %b %d %H:%M:%S %z %Y",
+                                 example="Sat Apr 24 16:13:05 +0000 2021")
+    twitter_id = fields.Integer(description="Id of the tweet",
+                                required=True, example=0000000000)
+    handle = fields.String(description="Twitter handle of the user",
+                           required=True, example="MyTwitterAcc")
+    text = fields.String(description="Contents of the tweet (< 280 characters)",
+                         example=("Je comprends les gens qui défendent la Wii U, moi aussi "
+                                  "j'ai défendu les consoles que j'affectionnais comme la Gamecube "
+                                  "et la Dreamcast, mais il faut reconnaitre que ce sont des échecs "
+                                  "commerciaux malgré leurs qualités et leurs exclusivités")
+                         )
     profile_user = fields.Url(description="Link to the twitter account",
-                              required=True)
-    name = fields.String(description="Title of the Twitter user", required=True)
-    tweet_link = fields.Url(description="Original URL of the tweet", required=True)
-    timestamp = fields.DateTime(description="Parsable timestamp of the tweet", required=True)
-    query = fields.Url(description="Similar to `profileUser`")
-    _type = fields.String(description="Type of research")
+                              required=True, example="https://twitter.com/MyTwitterAcc")
+    name = fields.String(description="Title of the Twitter user",
+                         required=True, example="My Twt User")
+    tweet_link = fields.Url(description="Original URL of the tweet",
+                            required=True,
+                            example="https://twitter.com/MyTwitterAcc/status/0000000000000000000")
+    timestamp = fields.DateTime(description="Parsable timestamp of the tweet",
+                                required=True, example="2021-04-26T10:29:01.724Z")
+    _type = fields.String(description="Type of research", example="tweet")
 
 
 class AnalyzedTweetSchema(CamelCaseSchema):
@@ -71,11 +82,20 @@ class AnalyzedTweetSchema(CamelCaseSchema):
     original_tweet = fields.Nested(TweetSchema(only=('twitter_id', 'handle', 'text')))
 
 
+class TweetShow(CamelCaseSchema):
+    tweet_show = fields.Nested(TweetSchema(only=('tweet_id', 'handle', 'text', 'timestamp')))
+
+
+class TweetShowList(Schema):
+    tweets = fields.List(fields.Nested(TweetShow))
+
+
 # register schemas with spec
 spec.components.schema("Input", schema=InputSchema)
 spec.components.schema("Output", schema=OutputSchema)
 spec.components.schema("Tweet", schema=TweetSchema)
 spec.components.schema("AnalyzedTweet", schema=AnalyzedTweetSchema)
+spec.components.schema("TweetShow", schema=TweetShowList)
 
 # add swagger tags that are used for endpoint annotation
 tags = [

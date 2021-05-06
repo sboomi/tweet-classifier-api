@@ -1,5 +1,8 @@
 flask
 flask_sqlalchemy
+mysql-connector-python==8.0.24
+flask-migrate
+flask-cors
 
 # testing
 pytest
@@ -11,7 +14,7 @@ uwsgi
 # swagger api docs
 apispec
 apispec_webframeworks
-marshmallow
+marshmallow>=3.0
 flask_swagger_ui
 openapi_spec_validator
 

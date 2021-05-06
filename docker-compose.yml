@@ -1,4 +1,4 @@
-version: "3.7"
+version: '3.7'
 
 services:
   flask-api:
@@ -16,7 +16,27 @@ services:
     expose:
       - ${FLASK_PORT}
     networks:
-      - app-net
+      - app-net-back
+
+  web:
+    container_name: react-frontend
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: ${DOCKERFILE_WEB}
+      args:
+        - FLASK_ENV=${FLASK_ENV}
+        - FLASK_HOST=0.0.0.0
+        - REACT_SCRIPTS_VERSION=${REACT_SCRIPTS_VERSION}
+        - NGINX_PORT=${NGINX_PORT}
+    volumes:
+      - ./web:/app
+      - /app/node_modules
+    ports:
+      - ${PORT_EXPOSE}:${NGINX_PORT}
+    networks:
+      - app-net-front
 
 networks:
-  app-net:
+  app-net-back:
+  app-net-front:
